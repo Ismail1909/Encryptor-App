@@ -6,37 +6,89 @@
 import QtQuick
 import QtQuick.Window
 import EncryptorApp
-import QtQuick.Dialogs
 import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Dialogs
 
-Window {
-    width: 640
-    height: 480
+
+ApplicationWindow {
     visible: true
-    title: qsTr("Hello World")
+    title: qsTr("File Cipher")
+    width: 400
+    height: 300
 
-    ToolBar {
-            Button {
-                text: qsTr("Choose Image...")
-                onClicked: fileDialog.open()
-            }
-        }
+    FileBrowser{
+        id:browser
+        anchors.left: parent.left
+        anchors.leftMargin: 8
+        anchors.top: parent.top
+        anchors.topMargin: 40
+
+    }
 
     PassField {
         id: password
-        anchors.centerIn: parent
+        anchors.top: browser.bottom
+        anchors.topMargin: 40
+        anchors.left: parent.left
+        anchors.leftMargin: 8
 
-    }
+     }
 
-    Image {
-        id: image
-        anchors.fill: parent
-        fillMode: Image.PreserveAspectFit
-    }
+    Button {
+        id: encrypt
+        width: 80
+        height: 20
+        anchors.top: password.bottom
+        anchors.topMargin: 10
+        anchors.left: parent.left
+        anchors.leftMargin: 8
+        text: "Encrypt"
+        enabled: browser.path && password.accepted ? true : false
+        onClicked: {
+            save.enabled = true;
+        }
+
+       }
+    Button {
+        id: decrypt
+        width: 80
+        height: 20
+        anchors.top: password.bottom
+        anchors.topMargin: 10
+        anchors.left: encrypt.right
+        anchors.leftMargin: 10
+        enabled: browser.path && password.accepted ? true : false
+        text: "Decrypt"
+
+       }
+
+    Button {
+        id: save
+        width: 80
+        height: 20
+        anchors.top: password.bottom
+        anchors.topMargin: 10
+        anchors.left: decrypt.right
+        anchors.leftMargin: 10
+        enabled: false
+        text: "Save"
+        onClicked:{
+            saveDialog.open()
+        }
+
+       }
 
     FileDialog {
-        id: fileDialog
-        currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
-        onAccepted: image.source = selectedFile
+        id: saveDialog
+        fileMode: FileDialog.SaveFile
+        title: "Please choose a file"
+        onAccepted: {
+        var _path = selectedFile.toString();
+        // remove prefixed "file:///"
+        _path = _path.replace(/^(file:\/{3})/,"");
+
     }
+    }
+
 }

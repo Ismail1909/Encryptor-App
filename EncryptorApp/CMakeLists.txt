@@ -5,7 +5,7 @@ project(EncryptorApp VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.2 REQUIRED COMPONENTS Quick)
+find_package(Qt6 6.2 REQUIRED COMPONENTS Quick Core)
 
 
 qt_add_executable(appEncryptorApp
@@ -34,7 +34,7 @@ set_target_properties(appEncryptorApp PROPERTIES
 include(FindOpenSSL)
 
 target_link_libraries(appEncryptorApp
-    PRIVATE Qt6::Quick
+    PRIVATE Qt6::Quick Qt6::Core
     OpenSSL::SSL
     OpenSSL::Crypto
 

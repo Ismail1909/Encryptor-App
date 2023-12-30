@@ -2,11 +2,15 @@
 #define FILEMANAGER_H
 
 #include <QObject>
+#include <QFile>
+#include <QSaveFile>
 
-class FileManager
+class FileManager: public QObject
 {
+    Q_OBJECT
 public:
-    FileManager();
+    FileManager(QObject *parent = nullptr);
+    //~FileManager();
 
 
 };

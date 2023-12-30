@@ -11,7 +11,9 @@ import QtQuick.Layouts
 Item {
     id: root
 
-    width: 400; height: 400
+    width: 200; height: 100
+
+    property bool accepted
 
     /* Function to Validate user input password against password requirements */
     function passwordValidation(passIn)
@@ -76,6 +78,7 @@ Item {
         /* Password input field */
         TextField{
             id: password
+            validator: RegularExpressionValidator { regularExpression: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/ }
             placeholderText: qsTr("Enter Password")
             hoverEnabled: true
             leftPadding : 5
@@ -91,6 +94,7 @@ Item {
             /* Password field text editing handler */
             onTextEdited:
             {
+                root.accepted = false
                 if(length > 0)
                 {
                     /* If there is input */
@@ -113,6 +117,10 @@ Item {
                     helper.text = ""
                 }
             }
+            onAccepted: root.accepted = true
+            onAcceptableInputChanged: root.accepted = false
+
+
 
         }
 
