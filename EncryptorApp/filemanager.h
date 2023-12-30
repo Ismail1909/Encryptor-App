@@ -7,6 +7,8 @@ class FileManager
 {
 public:
     FileManager();
+
+
 };
 
 #endif // FILEMANAGER_H

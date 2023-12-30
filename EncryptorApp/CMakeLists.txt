@@ -30,8 +30,14 @@ set_target_properties(appEncryptorApp PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
 
+#Include OpenSSL in project and link it
+include(FindOpenSSL)
+
 target_link_libraries(appEncryptorApp
     PRIVATE Qt6::Quick
+    OpenSSL::SSL
+    OpenSSL::Crypto
+
 )
 
 install(TARGETS appEncryptorApp

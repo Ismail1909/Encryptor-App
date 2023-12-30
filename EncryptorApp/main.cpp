@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
-    Encryptor* encryptor = new Encryptor(&app);
+    Encryptor encryptor(&app);
 
     QQmlApplicationEngine engine;
     const QUrl url(u"qrc:/EncryptorApp/Main.qml"_qs);
