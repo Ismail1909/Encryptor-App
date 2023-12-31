@@ -18,7 +18,7 @@ Item {
             id: path
             width: 250
             height: 20
-            placeholderText: qsTr("Enter File")
+            placeholderText: qsTr("Browse File...")
 
     }
 

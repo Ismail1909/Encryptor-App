@@ -45,7 +45,7 @@ ApplicationWindow {
     PassField {
         id: password
         anchors.top: fileinfo.bottom
-        anchors.topMargin: 40
+        anchors.topMargin: 20
         anchors.left: parent.left
         anchors.leftMargin: 8
         onSetPassword:
@@ -60,7 +60,7 @@ ApplicationWindow {
         width: 80
         height: 20
         anchors.top: password.bottom
-        anchors.topMargin: 10
+        anchors.topMargin: 20
         anchors.left: parent.left
         anchors.leftMargin: 8
         text: "Encrypt"
@@ -78,7 +78,7 @@ ApplicationWindow {
         width: 80
         height: 20
         anchors.top: password.bottom
-        anchors.topMargin: 10
+        anchors.topMargin: 20
         anchors.left: encrypt.right
         anchors.leftMargin: 10
         enabled: (browser.path && password.accepted && FileManager.getExtension(browser.path) === "aes")  ? true : false
@@ -97,7 +97,7 @@ ApplicationWindow {
         width: 80
         height: 20
         anchors.top: password.bottom
-        anchors.topMargin: 10
+        anchors.topMargin: 20
         anchors.left: decrypt.right
         anchors.leftMargin: 10
         enabled: false
