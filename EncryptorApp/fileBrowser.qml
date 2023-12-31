@@ -26,7 +26,6 @@ Item {
             id: browser
             width: 80
             height: 20
-            color: "#06476f"
             anchors.left: path.right
             anchors.leftMargin: 10
             text: "Browse..."
