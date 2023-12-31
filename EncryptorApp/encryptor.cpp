@@ -22,7 +22,7 @@ Encryptor::~Encryptor()
     finalize();
 }
 
-QByteArray Encryptor::encryptAES(QByteArray password, QByteArray &data)
+QByteArray Encryptor::encryptAES(const QByteArray &data)
 {
     /* Initialze random salt, it's important for preventing the creation of a pattern
        in the files encrypted with the same password */
@@ -60,7 +60,7 @@ QByteArray Encryptor::encryptAES(QByteArray password, QByteArray &data)
     }
 
     /* Set a pointer to the plain data and its length */
-    char *input = data.data();
+    const char *input = data.data();
     int len = data.size();
 
     /* Encrypted data length */
@@ -75,6 +75,7 @@ QByteArray Encryptor::encryptAES(QByteArray password, QByteArray &data)
     if(!EVP_EncryptInit_ex(en, NULL, NULL, NULL, NULL))
     {
         qCritical() << "EVP_EncryptInit_ex() failed " << ERR_error_string(ERR_get_error(), NULL);
+        free(ciphertext);
         return QByteArray();
     }
 
@@ -82,6 +83,7 @@ QByteArray Encryptor::encryptAES(QByteArray password, QByteArray &data)
     if(!EVP_EncryptUpdate(en, ciphertext, &c_len,(unsigned char *)input, len))
     {
         qCritical() << "EVP_EncryptUpdate() failed " << ERR_error_string(ERR_get_error(), NULL);
+        free(ciphertext);
         return QByteArray();
     }
 
@@ -89,6 +91,7 @@ QByteArray Encryptor::encryptAES(QByteArray password, QByteArray &data)
     if(!EVP_EncryptFinal(en, ciphertext+c_len, &f_len))
     {
         qCritical() << "EVP_EncryptFinal_ex() failed "  << ERR_error_string(ERR_get_error(), NULL);
+        free(ciphertext);
         return QByteArray();
     }
 
@@ -111,14 +114,15 @@ QByteArray Encryptor::encryptAES(QByteArray password, QByteArray &data)
 
 }
 
-QByteArray Encryptor::decryptAES(QByteArray password, QByteArray &data)
+QByteArray Encryptor::decryptAES(const QByteArray &data)
 {
     /* Retrieve the salt generated from encryption */
     QByteArray msalt;
+    QByteArray mdata=data;
     if(QString(data.mid(0,8)) == "Salted__")
     {
         msalt = data.mid(8,SALTSIZE);
-        data = data.mid(8+SALTSIZE);
+        mdata = mdata.mid(8+SALTSIZE);
     }
     else
     {
@@ -157,8 +161,8 @@ QByteArray Encryptor::decryptAES(QByteArray password, QByteArray &data)
     }
 
     /* Set a pointer to the encrypted data and its length */
-    char *input = data.data();
-    int len = data.size();
+    const char *input = mdata.data();
+    int len = mdata.size();
 
 
     int p_len = len, f_len = 0;
@@ -191,6 +195,11 @@ QByteArray Encryptor::decryptAES(QByteArray password, QByteArray &data)
 
     return decrypted;
 
+}
+
+void Encryptor::setPassword(const QByteArray password)
+{
+    this->password = password;
 }
 
 void Encryptor::initalize()

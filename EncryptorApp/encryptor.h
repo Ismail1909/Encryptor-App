@@ -1,6 +1,7 @@
 #ifndef ENCRYPTOR_H
 #define ENCRYPTOR_H
 
+#include "qqmlintegration.h"
 #include <QObject>
 #include <QDebug>
 #include <QFile>
@@ -12,8 +13,10 @@
 
 class Encryptor : public QObject
 {
+    /* Class used as a QML Singleton */
     Q_OBJECT
-    //Q_PROPERTY(type name READ name WRITE setName NOTIFY nameChanged)
+    QML_ELEMENT
+    QML_SINGLETON
 public:
     explicit Encryptor(QObject *parent = nullptr);
     ~Encryptor();
@@ -23,16 +26,25 @@ public:
      * @param data The byte array to encrypt
      * @return QByteArray
      */
-    QByteArray encryptAES(QByteArray password, QByteArray &data);
+    Q_INVOKABLE QByteArray encryptAES(const QByteArray &data);
 
     /**
      * @brief Decrypt a byte array with AES 256 CBC
      * @param data The byte array to decrypt
      * @return QByteArray
      */
-    QByteArray decryptAES(QByteArray password, QByteArray &data);
+    Q_INVOKABLE QByteArray decryptAES(const QByteArray &data);
+
+    /**
+     * @brief get the size of the file
+     * @param file path or name
+     * @return QString
+     */
+    Q_INVOKABLE void setPassword(const QByteArray password);
 
 private:
+
+    QByteArray password;
 
     /**
       * @brief Initalize the OpenSSL Lib

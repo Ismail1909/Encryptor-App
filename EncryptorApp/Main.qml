@@ -43,6 +43,10 @@ ApplicationWindow {
         anchors.topMargin: 40
         anchors.left: parent.left
         anchors.leftMargin: 8
+        onSetPassword:
+        {
+            Encryptor.setPassword(password.text)
+        }
 
      }
 
@@ -57,9 +61,8 @@ ApplicationWindow {
         text: "Encrypt"
         enabled: (browser.path && password.accepted && FileManager.getExtension(browser.path) !== "aes") ? true : false
         onClicked: {
-            FileManager.readFile(browser.path)
 
-            FileManager.writeTempFile(FileManager.readFile(browser.path))
+            FileManager.writeTempFile(Encryptor.encryptAES(FileManager.readFile(browser.path)))
             save.enabled = true;
         }
 
@@ -74,6 +77,12 @@ ApplicationWindow {
         anchors.leftMargin: 10
         enabled: (browser.path && password.accepted && FileManager.getExtension(browser.path) === "aes")  ? true : false
         text: "Decrypt"
+        onClicked: {
+
+            ;
+            FileManager.writeTempFile(Encryptor.decryptAES(FileManager.readFile(browser.path)))
+            save.enabled = true;
+        }
 
        }
 
@@ -102,6 +111,8 @@ ApplicationWindow {
         // remove prefixed "file:///"
         _path = _path.replace(/^(file:\/{3})/,"");
         FileManager.saveFile(_path);
+
+        save.enabled = false;
 
     }
     }

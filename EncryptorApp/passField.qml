@@ -14,6 +14,8 @@ Item {
     width: 200; height: 100
 
     property bool accepted
+    signal setPassword
+    property alias text : password.text
 
     /* Function to Validate user input password against password requirements */
     function passwordValidation(passIn)
@@ -118,9 +120,13 @@ Item {
                 }
             }
             onAccepted: root.accepted = true
-            onAcceptableInputChanged: root.accepted = false
+            onAcceptableInputChanged:
+            {
 
+                root.accepted = false
+                root.setPassword
 
+            }
 
         }
 
