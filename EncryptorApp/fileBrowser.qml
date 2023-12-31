@@ -9,7 +9,9 @@ import QtQuick.Dialogs
 
 Item {
 
+    id: root
     property alias path: path.text
+
     signal clicked
 
     TextField {
@@ -19,6 +21,7 @@ Item {
             placeholderText: qsTr("Enter File")
 
     }
+
     Button {
             id: browser
             width: 80

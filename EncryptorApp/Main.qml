@@ -25,10 +25,21 @@ ApplicationWindow {
         anchors.topMargin: 40
 
     }
+    Text{
+       id:fileinfo
+       anchors.top: browser.bottom
+       anchors.topMargin: 20
+       anchors.left: parent.left
+       anchors.leftMargin: 8
+       text:{
+
+           browser.path ? "File Extension: " + FileManager.getExtension(browser.path) + " File Size: " + FileManager.getSize(browser.path) + " Bytes" : " "
+        }
+    }
 
     PassField {
         id: password
-        anchors.top: browser.bottom
+        anchors.top: fileinfo.bottom
         anchors.topMargin: 40
         anchors.left: parent.left
         anchors.leftMargin: 8
@@ -44,8 +55,11 @@ ApplicationWindow {
         anchors.left: parent.left
         anchors.leftMargin: 8
         text: "Encrypt"
-        enabled: browser.path && password.accepted ? true : false
+        enabled: (browser.path && password.accepted && FileManager.getExtension(browser.path) !== "aes") ? true : false
         onClicked: {
+            FileManager.readFile(browser.path)
+
+            FileManager.writeTempFile(FileManager.readFile(browser.path))
             save.enabled = true;
         }
 
@@ -58,7 +72,7 @@ ApplicationWindow {
         anchors.topMargin: 10
         anchors.left: encrypt.right
         anchors.leftMargin: 10
-        enabled: browser.path && password.accepted ? true : false
+        enabled: (browser.path && password.accepted && FileManager.getExtension(browser.path) === "aes")  ? true : false
         text: "Decrypt"
 
        }
@@ -87,6 +101,7 @@ ApplicationWindow {
         var _path = selectedFile.toString();
         // remove prefixed "file:///"
         _path = _path.replace(/^(file:\/{3})/,"");
+        FileManager.saveFile(_path);
 
     }
     }
