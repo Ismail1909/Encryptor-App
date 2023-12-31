@@ -40,7 +40,7 @@ public:
      * @param file path or name
      * @return QString
      */
-    Q_INVOKABLE void setPassword(const QByteArray password);
+    Q_INVOKABLE void setPassword(QString _password);
 
 private:
 

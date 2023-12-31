@@ -24,6 +24,7 @@ Encryptor::~Encryptor()
 
 QByteArray Encryptor::encryptAES(const QByteArray &data)
 {
+    qCritical() << "USER PASSWORD: " << this->password ;
     /* Initialze random salt, it's important for preventing the creation of a pattern
        in the files encrypted with the same password */
     QByteArray msalt = randomBytes(SALTSIZE);
@@ -116,6 +117,8 @@ QByteArray Encryptor::encryptAES(const QByteArray &data)
 
 QByteArray Encryptor::decryptAES(const QByteArray &data)
 {
+
+    qCritical() << "USER PASSWORD: " << this->password ;
     /* Retrieve the salt generated from encryption */
     QByteArray msalt;
     QByteArray mdata=data;
@@ -197,9 +200,9 @@ QByteArray Encryptor::decryptAES(const QByteArray &data)
 
 }
 
-void Encryptor::setPassword(const QByteArray password)
+void Encryptor::setPassword(QString _password)
 {
-    this->password = password;
+    this->password = _password.toLatin1();
 }
 
 void Encryptor::initalize()

@@ -15,14 +15,14 @@ Item {
 
     property bool accepted
     signal setPassword
-    property alias text : password.text
+    property alias ptext : password.text
 
     /* Function to Validate user input password against password requirements */
     function passwordValidation(passIn)
     {
         /* The Regular Expression used for Validation:
         At least 8 Characters long, 1 upper and lower case letter, 1 number and 1 special character */
-        var regExp = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+        var regExp = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
         if(regExp.test(passIn))
         {
             /* If the password is valid */
@@ -119,14 +119,14 @@ Item {
                     helper.text = ""
                 }
             }
-            onAccepted: root.accepted = true
-            onAcceptableInputChanged:
+            onAccepted:
             {
 
-                root.accepted = false
-                root.setPassword
-
+                root.accepted = true
+                root.setPassword()
             }
+            onAcceptableInputChanged: root.accepted = false
+
 
         }
 

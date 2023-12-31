@@ -11,11 +11,16 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 
 
+
+
 ApplicationWindow {
     visible: true
     title: qsTr("File Cipher")
     width: 400
     height: 300
+
+    property bool decryptFlag : false
+
 
     FileBrowser{
         id:browser
@@ -45,7 +50,7 @@ ApplicationWindow {
         anchors.leftMargin: 8
         onSetPassword:
         {
-            Encryptor.setPassword(password.text)
+            Encryptor.setPassword(password.ptext)
         }
 
      }
@@ -62,6 +67,7 @@ ApplicationWindow {
         enabled: (browser.path && password.accepted && FileManager.getExtension(browser.path) !== "aes") ? true : false
         onClicked: {
 
+            decryptFlag = false
             FileManager.writeTempFile(Encryptor.encryptAES(FileManager.readFile(browser.path)))
             save.enabled = true;
         }
@@ -79,7 +85,7 @@ ApplicationWindow {
         text: "Decrypt"
         onClicked: {
 
-            ;
+            decryptFlag = true
             FileManager.writeTempFile(Encryptor.decryptAES(FileManager.readFile(browser.path)))
             save.enabled = true;
         }
@@ -97,6 +103,16 @@ ApplicationWindow {
         enabled: false
         text: "Save"
         onClicked:{
+            if(decryptFlag)
+            {
+               saveDialog.nameFilters = ["All Files (*.*) "]
+            }
+            else
+            {
+
+               saveDialog.nameFilters = ["AES Encrypted file (*.aes)"]
+            }
+
             saveDialog.open()
         }
 
