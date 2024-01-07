@@ -6,6 +6,9 @@
 #include <QFile>
 #include <QTemporaryFile>
 #include <QFileInfo>
+#include <QMimeDatabase>
+#include <QMimeType>
+
 
 class FileManager: public QObject
 {

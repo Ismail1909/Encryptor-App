@@ -86,8 +86,15 @@ ApplicationWindow {
         onClicked: {
 
             decryptFlag = true
-            Encryptor.decryptAES(browser.path)
-            save.enabled = true;
+            if(Encryptor.decryptAES(browser.path))
+            {
+                save.enabled = true;
+
+            }
+            else
+            {
+               messageDialog.open();
+            }
         }
 
        }
@@ -131,6 +138,20 @@ ApplicationWindow {
         save.enabled = false;
 
     }
+    }
+
+    MessageDialog {
+        id: messageDialog
+        title:qsTr("Wrong Password")
+        informativeText: qsTr("The Password you entered was incorrect, Please Enter the password again")
+        buttons: MessageDialog.Ok
+        onButtonClicked: function (button, role) {
+            switch (button) {
+            case MessageDialog.Ok:
+                password.accepted = false;
+                break;
+            }
+        }
     }
 
 }

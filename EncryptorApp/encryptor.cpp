@@ -9,6 +9,7 @@
 #include <openssl/evp.h>
 #include <openssl/err.h>
 #include <openssl/aes.h>
+#include <openssl/sha.h>
 #include <openssl/rand.h>
 #include <openssl/core.h>
 #include <openssl/core_names.h>     /* OSSL_KDF_*           */
@@ -46,15 +47,21 @@ bool Encryptor::encryptAES(QString filename)
 
     RAND_bytes(iv,IVSIZE);
 
-    QByteArray buffer = QByteArray(reinterpret_cast<char*>(iv), IVSIZE);
+
 
     if(tempFile.open())
     {
         tempFile.write("AES__");
-        tempFile.write(buffer);
+        tempFile.write((char*)iv,IVSIZE);
     }
 
     kdf_deriveArgon(iv,key);
+
+    char md_buf[32];
+    SHA256(key,32,(unsigned char*)md_buf);
+
+    tempFile.write(md_buf,2);
+
 
     /* Initialize OpenSSL Cipher Envelope */
     EVP_CIPHER_CTX* en = EVP_CIPHER_CTX_new();
@@ -82,12 +89,10 @@ bool Encryptor::encryptAES(QString filename)
     }
 
     if(inFile.open(QIODevice::ReadOnly)){
-        QTextStream stream1(&inFile);
-        QTextStream stream0(&tempFile);
         char FileData[1024];
 
 
-        //stream0 << "AES__" << iv ;
+
 
         while(inFile.atEnd() == false )
         {
@@ -99,28 +104,32 @@ bool Encryptor::encryptAES(QString filename)
             int c_len = len + AES_BLOCK_SIZE;
 
             /* Allocating memory for encrypted data */
-            unsigned char *ciphertext = (unsigned char*)malloc(c_len);
+            char *ciphertext = (char*)malloc(c_len);
 
             /* Encrypts bytes from the buffer input and writes the encrypted version to ciphertext */
-            if(!EVP_EncryptUpdate(en, ciphertext, &c_len,(const unsigned char *)input, len))
+            if(!EVP_EncryptUpdate(en, (unsigned char *)ciphertext, &c_len,(const unsigned char *)input, len))
             {
                 qCritical() << "EVP_EncryptUpdate() failed " << ERR_error_string(ERR_get_error(), NULL);
                 free(ciphertext);
                 return false;
             }
 
+            tempFile.write(ciphertext,c_len);
+
+            if(inFile.atEnd() == true)
+            {
 
                 /* Encrypts the “final” data block and finishes the Encryption Operation */
-                if(!EVP_EncryptFinal(en, ciphertext+c_len, &f_len))
+                if(!EVP_EncryptFinal_ex(en, (unsigned char*)ciphertext, &f_len))
                 {
                     qCritical() << "EVP_EncryptFinal_ex() failed "  << ERR_error_string(ERR_get_error(), NULL);
                     free(ciphertext);
                     return false;
                 }
 
-                len = c_len + f_len;
+                tempFile.write(ciphertext,f_len);
 
-                tempFile.write((const char*)ciphertext,len);
+            }
             free(ciphertext);
 
         }
@@ -158,6 +167,17 @@ bool Encryptor::decryptAES(QString filename)
 
         kdf_deriveArgon(iv,key);
 
+        char md_buf[32], auth_buf[2];
+
+        SHA256(key,32,(unsigned char*)md_buf);
+
+        inFile.read(auth_buf,2);
+
+        if ( (md_buf[0] != auth_buf[0]) || (md_buf[1] != auth_buf[1]))
+        {
+            return false;
+        }
+
         /* Initialize OpenSSL Cipher Envelope */
         EVP_CIPHER_CTX* de = EVP_CIPHER_CTX_new();
         EVP_CIPHER_CTX_init(de);
@@ -182,39 +202,43 @@ bool Encryptor::decryptAES(QString filename)
                 int p_len = len, f_len =0;
 
                 /* Allocating memory for encrypted data */
-                unsigned char *plaintext = (unsigned char*)malloc(p_len + AES_BLOCK_SIZE);
+                char *plaintext = (char*)malloc(p_len + AES_BLOCK_SIZE);
 
                 /* Decrypts bytes from the buffer input and writes the decrypted version to plaintext */
-                if(!EVP_DecryptUpdate(de, plaintext, &p_len, (const unsigned char *)input, len))
+                if(!EVP_DecryptUpdate(de, (unsigned char*)plaintext, &p_len, (const unsigned char *)input, len))
                 {
                     qCritical() << "EVP_DecryptUpdate() failed " <<  ERR_error_string(ERR_get_error(), NULL);
                     free(plaintext);
                     return false;
                 }
 
-                /* Encrypts the “final” data block and finishes the Decryption Operation */
-                if(inFile.atEnd() == true){
-                    if(!EVP_DecryptFinal_ex(de,plaintext+p_len,&f_len))
+                tempFile.write(plaintext,p_len);
+                if(inFile.atEnd() == true)
+                {
+
+                    /* Encrypts the “final” data block and finishes the Encryption Operation */
+                    if(!EVP_DecryptFinal_ex(de, (unsigned char*)plaintext, &f_len))
                     {
-                        qCritical() << "EVP_DecryptFinal_ex() failed " <<  ERR_error_string(ERR_get_error(), NULL);
+                        qCritical() << "EVP_DecryptFinal_ex() failed "  << ERR_error_string(ERR_get_error(), NULL);
                         free(plaintext);
                         return false;
                     }
+
+                    tempFile.write(plaintext,f_len);
+
                 }
 
-                len = p_len + f_len;
-
-                tempFile.write((const char*)plaintext,len);
                 free(plaintext);
 
             }
 
-            tempFile.close();
+
         }
 
         /* Clean up Envelope */
         EVP_CIPHER_CTX_cleanup(de);
 
+        tempFile.close();
         inFile.close();
     }
 
@@ -287,7 +311,7 @@ bool Encryptor::kdf_deriveArgon(unsigned char salt[], unsigned char key[])
     size_t keylen = 256;
 
     /* argon2 params, please refer to RFC9106 for recommended defaults */
-    uint32_t lanes = 2, threads = 2, memcost = 65536;
+    uint32_t lanes = 4, threads = 2, memcost = 65536, iter = 3;
     for(int i=0;i<password.length();i++)
     {
         pwd[i] = password[i];
@@ -303,12 +327,12 @@ bool Encryptor::kdf_deriveArgon(unsigned char salt[], unsigned char key[])
                                        &lanes);
     *p++ = OSSL_PARAM_construct_uint32(OSSL_KDF_PARAM_ARGON2_MEMCOST,
                                        &memcost);
-    //*p++ = OSSL_PARAM_construct_uint32(OSSL_KDF_PARAM_ITER, &iter);
+    *p++ = OSSL_PARAM_construct_uint32(OSSL_KDF_PARAM_ITER, &iter);
     *p++ = OSSL_PARAM_construct_octet_string(OSSL_KDF_PARAM_SALT, salt, 16);
     *p++ = OSSL_PARAM_construct_octet_string(OSSL_KDF_PARAM_PASSWORD, pwd, password.length());
     *p++ = OSSL_PARAM_construct_end();
 
-    if ((kdf = EVP_KDF_fetch(NULL, "ARGON2D", NULL)) == NULL)
+    if ((kdf = EVP_KDF_fetch(NULL, "ARGON2ID", NULL)) == NULL)
         ret = false;
 
     if ((kctx = EVP_KDF_CTX_new(kdf)) == NULL)

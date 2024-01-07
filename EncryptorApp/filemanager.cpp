@@ -15,9 +15,23 @@ FileManager::~FileManager()
 
 QString FileManager::getExtension(QString filename)
 {
-    QFileInfo fi(filename);
+    QFile inFile(filename);
+    if(inFile.open(QIODevice::ReadOnly))
+    {
+        if(QString(inFile.read(3)) == "AES")
+        {
+            return "aes";
+        }
+    }
+    inFile.close();
 
-    return fi.completeSuffix();
+    QMimeDatabase db;
+    QMimeType mime = db.mimeTypeForFile(filename, QMimeDatabase::MatchContent);
+
+    QStringList list = mime.suffixes();
+
+    return mime.name();
+
 }
 
 qint64 FileManager::getSize(QString filename)

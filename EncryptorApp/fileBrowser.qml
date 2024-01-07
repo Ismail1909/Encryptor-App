@@ -18,6 +18,7 @@ Item {
             id: path
             width: 250
             height: 20
+            readOnly: true
             placeholderText: qsTr("Browse File...")
 
     }
