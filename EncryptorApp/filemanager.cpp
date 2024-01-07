@@ -4,16 +4,13 @@
 
 FileManager::FileManager(QObject *parent) : QObject{parent}
 {
-    tempFile.setFileName("tempFile");
+
 
 }
 
 FileManager::~FileManager()
 {
-    if(tempFile.exists())
-    {
-        tempFile.remove();
-    }
+
 }
 
 QString FileManager::getExtension(QString filename)

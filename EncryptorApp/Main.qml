@@ -68,7 +68,7 @@ ApplicationWindow {
         onClicked: {
 
             decryptFlag = false
-            FileManager.writeTempFile(Encryptor.encryptAES(FileManager.readFile(browser.path)))
+            Encryptor.encryptAES(browser.path)
             save.enabled = true;
         }
 
@@ -86,7 +86,7 @@ ApplicationWindow {
         onClicked: {
 
             decryptFlag = true
-            FileManager.writeTempFile(Encryptor.decryptAES(FileManager.readFile(browser.path)))
+            Encryptor.decryptAES(browser.path)
             save.enabled = true;
         }
 
@@ -126,7 +126,7 @@ ApplicationWindow {
         var _path = selectedFile.toString();
         // remove prefixed "file:///"
         _path = _path.replace(/^(file:\/{3})/,"");
-        FileManager.saveFile(_path);
+        Encryptor.saveFile(_path);
 
         save.enabled = false;
 

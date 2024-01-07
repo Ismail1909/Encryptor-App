@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QDebug>
 #include <QFile>
+#include<QTemporaryFile>
 
 #define KEYSIZE 32
 #define IVSIZE 16
@@ -18,7 +19,10 @@ class Encryptor : public QObject
     QML_ELEMENT
     QML_SINGLETON
 public:
-    explicit Encryptor(QObject *parent = nullptr);
+
+    QTemporaryFile tempFile{"tempFile"};
+
+    Encryptor(QObject *parent = nullptr);
     ~Encryptor();
 
     /**
@@ -26,14 +30,14 @@ public:
      * @param data The byte array to encrypt
      * @return QByteArray
      */
-    Q_INVOKABLE QByteArray encryptAES(const QByteArray &data);
+    Q_INVOKABLE bool encryptAES(QString filename);
 
     /**
      * @brief Decrypt a byte array with AES 256 CBC
      * @param data The byte array to decrypt
      * @return QByteArray
      */
-    Q_INVOKABLE QByteArray decryptAES(const QByteArray &data);
+    Q_INVOKABLE bool decryptAES(QString filename);
 
     /**
      * @brief get the size of the file
@@ -42,9 +46,13 @@ public:
      */
     Q_INVOKABLE void setPassword(QString _password);
 
+    Q_INVOKABLE void saveFile(QString filename);
+
 private:
 
     QByteArray password;
+
+
 
     /**
       * @brief Initalize the OpenSSL Lib
@@ -62,6 +70,9 @@ private:
      * @return QByteArray
      */
     QByteArray randomBytes(int size);
+
+
+    bool kdf_deriveArgon(unsigned char salt[], unsigned char key[]);
 
 
 

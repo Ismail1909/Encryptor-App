@@ -12,7 +12,7 @@ Item {
     id: root
     property alias path: path.text
 
-    signal clicked
+
 
     TextField {
             id: path
