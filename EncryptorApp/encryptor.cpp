@@ -303,8 +303,8 @@ bool Encryptor::kdf_deriveArgon(unsigned char salt[], unsigned char key[])
     bool ret = true;
     EVP_KDF *kdf = NULL;
     EVP_KDF_CTX *kctx = NULL;
-    OSSL_PARAM params[6];
-    OSSL_PARAM *p = params;
+    OSSL_PARAM params[7];
+    OSSL_PARAM *p;
     unsigned char pwd[password.length()];
 
     /* derive result */
